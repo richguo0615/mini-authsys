@@ -1,0 +1,6 @@
+.idea
+vendor/
+!vendor/vendor.json
+.gogradle/
+.gradle/
+log/
