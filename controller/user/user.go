@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/go-redis/redis"
 	"github.com/richguo0615/mini-authsys/conf"
 	"github.com/richguo0615/mini-authsys/controller"
 	"github.com/richguo0615/mini-authsys/helper"
 	"github.com/richguo0615/mini-authsys/model"
 	"github.com/richguo0615/mini-authsys/model/db"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 func SignUp(writer http.ResponseWriter, request *http.Request) {
@@ -104,5 +107,64 @@ func Trans(w http.ResponseWriter, r *http.Request, parseToken *jwt.Token) {
 	if err := json.NewDecoder(r.Body).Decode(&transaction); err != nil {
 		helper.ResponseWithJson(w, http.StatusBadRequest, "Invalid request payload")
 		return
+	}
+}
+
+func SendVerifyCode(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("postVerifyCode!")
+
+	defer r.Body.Close()
+
+	var req struct {
+		Phone int `json:"phone"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		helper.ResponseWithJson(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	countKey := fmt.Sprintf("sms:%d:count", req.Phone)
+	codeKey := fmt.Sprintf("sms:%d:code", req.Phone)
+
+	var verifyCode string
+
+	countStr, err := conf.RedisClient.Get(countKey).Result()
+	if err == redis.Nil {
+		//不曾紀錄
+		verifyCode = helper.RandNumStringRunes(4)
+
+		pl := conf.RedisClient.TxPipeline()
+		pl.Set(countKey, 1, 10 * time.Second)
+		pl.Set(codeKey, verifyCode, time.Duration(helper.GetNextEarlyNano()) * time.Nanosecond)
+		pl.Exec()
+
+		helper.ResponseWithJson(w, http.StatusOK, struct {VerifyCode string}{
+			VerifyCode: verifyCode,
+		})
+		return
+	} else if err != nil {
+		helper.ResponseWithJson(w, http.StatusBadRequest, fmt.Sprint("Redis get key err: ", err))
+		return
+	} else {
+		// 曾紀錄
+		count, _ := strconv.Atoi(countStr)
+		if count+1 > 3 {
+			helper.ResponseWithJson(w, http.StatusNotFound, "max req verifyCode 3 times a day")
+			return
+		} else {
+			verifyCode = helper.RandNumStringRunes(4)
+
+			pl := conf.RedisClient.TxPipeline()
+			pl.Incr(countKey)
+			pl.Expire(countKey, 10 * time.Second)
+			pl.Set(codeKey, verifyCode, time.Duration(helper.GetNextEarlyNano()) * time.Nanosecond)
+			pl.Exec()
+
+			helper.ResponseWithJson(w, http.StatusOK, struct {VerifyCode string}{
+				VerifyCode: verifyCode,
+			})
+			return
+		}
 	}
 }

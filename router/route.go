@@ -14,11 +14,12 @@ import (
 func InitRoute() {
 	router := mux.NewRouter()
 
+	router.HandleFunc("/", defalt.Index).Methods("GET")
 	router.HandleFunc("/signup", user.SignUp).Methods("POST")
 	router.HandleFunc("/auth", user.Auth).Methods("POST")
 	router.HandleFunc("/userInfo", validateTokenMiddleware(user.GetUserInfo)).Methods("GET")
 	router.HandleFunc("/trans", validateTokenMiddleware(user.Trans)).Methods("POST")
-	router.HandleFunc("/", defalt.Index).Methods("GET")
+	router.HandleFunc("/sendVerifyCode", user.SendVerifyCode).Methods("POST")
 
 	err := http.ListenAndServe(":8082", router)
 	if err != nil {

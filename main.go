@@ -9,5 +9,6 @@ import (
 func main() {
 	fmt.Println("execute main.go")
 	conf.InitDB()
+	conf.InitRedis()
 	router.InitRoute()
 }
