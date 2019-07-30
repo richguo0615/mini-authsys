@@ -135,8 +135,11 @@ func SendVerifyCode(w http.ResponseWriter, r *http.Request) {
 		verifyCode = helper.RandNumStringRunes(4)
 
 		pl := conf.RedisClient.TxPipeline()
-		pl.Set(countKey, 1, 10 * time.Second)
-		pl.Set(codeKey, verifyCode, time.Duration(helper.GetNextEarlyNano()) * time.Nanosecond)
+
+		nextEarly := time.Duration(helper.GetNextEarlyNano())
+
+		pl.Set(countKey, 1, nextEarly * time.Nanosecond)
+		pl.Set(codeKey, verifyCode, nextEarly * time.Nanosecond)
 		pl.Exec()
 
 		helper.ResponseWithJson(w, http.StatusOK, struct {VerifyCode string}{
@@ -157,8 +160,11 @@ func SendVerifyCode(w http.ResponseWriter, r *http.Request) {
 
 			pl := conf.RedisClient.TxPipeline()
 			pl.Incr(countKey)
-			pl.Expire(countKey, 10 * time.Second)
-			pl.Set(codeKey, verifyCode, time.Duration(helper.GetNextEarlyNano()) * time.Nanosecond)
+
+			nextEarly := time.Duration(helper.GetNextEarlyNano())
+
+			pl.Expire(countKey, nextEarly * time.Nanosecond)
+			pl.Set(codeKey, verifyCode, nextEarly * time.Nanosecond)
 			pl.Exec()
 
 			helper.ResponseWithJson(w, http.StatusOK, struct {VerifyCode string}{
