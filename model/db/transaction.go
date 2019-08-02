@@ -7,6 +7,6 @@ type Transaction struct {
 	UserId int32 `gorm:"type:integer;not null;" validate:"required"`
 	OperType int `gorm:"type:smallint;not null;" validate:"required"`
 	Amount int64 `gorm:"type:integer;not null;" validate:"required"`
-	Balance int64 `gorm:"type:integer;"`
+	AfterBalance int64 `gorm:"type:integer;unsigned;"`
 	CreatedAt time.Time `gorm:"type:timestamp;not null;" validate:"required"`
 }

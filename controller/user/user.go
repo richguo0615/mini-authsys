@@ -38,7 +38,7 @@ func SignUp(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	jwtStr, err := controller.GeneratorJWT(user.Name)
+	jwtStr, err := controller.GeneratorJWT(user.ID, user.Name)
 	if err != nil {
 		helper.ResponseWithJson(writer, http.StatusBadRequest, err)
 		return
@@ -71,7 +71,7 @@ func Auth(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	jwtStr, err := controller.GeneratorJWT(user.Name)
+	jwtStr, err := controller.GeneratorJWT(user.ID, user.Name)
 	if err != nil {
 		helper.ResponseWithJson(writer, http.StatusBadRequest, err)
 	}
@@ -95,19 +95,6 @@ func GetUserInfo(writer http.ResponseWriter, request *http.Request, parseToken *
 	user.Password = ""
 
 	helper.ResponseWithJson(writer, http.StatusOK, user)
-}
-
-func Trans(w http.ResponseWriter, r *http.Request, parseToken *jwt.Token) {
-
-	fmt.Println("trans!")
-
-	defer r.Body.Close()
-
-	var transaction db.Transaction
-	if err := json.NewDecoder(r.Body).Decode(&transaction); err != nil {
-		helper.ResponseWithJson(w, http.StatusBadRequest, "Invalid request payload")
-		return
-	}
 }
 
 func SendVerifyCode(w http.ResponseWriter, r *http.Request) {

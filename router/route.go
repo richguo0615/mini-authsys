@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/richguo0615/mini-authsys/constant"
 	"github.com/richguo0615/mini-authsys/controller/defalt"
+	"github.com/richguo0615/mini-authsys/controller/transation"
 	"github.com/richguo0615/mini-authsys/controller/user"
 	"github.com/richguo0615/mini-authsys/helper"
 	"net/http"
@@ -18,7 +19,7 @@ func InitRoute() {
 	router.HandleFunc("/signup", user.SignUp).Methods("POST")
 	router.HandleFunc("/auth", user.Auth).Methods("POST")
 	router.HandleFunc("/userInfo", validateTokenMiddleware(user.GetUserInfo)).Methods("GET")
-	router.HandleFunc("/trans", validateTokenMiddleware(user.Trans)).Methods("POST")
+	router.HandleFunc("/transIn", validateTokenMiddleware(transation.TransIn)).Methods("POST")
 	router.HandleFunc("/sendVerifyCode", user.SendVerifyCode).Methods("POST")
 
 	err := http.ListenAndServe(":8082", router)

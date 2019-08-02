@@ -14,8 +14,9 @@ type User struct {
 	Password string `json:"password"`
 }
 
-func GeneratorJWT(userName string) (tokenStr string, err error) {
+func GeneratorJWT(userId int32, userName string) (tokenStr string, err error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userId": userId,
 		"username": userName,
 		"exp": time.Now().Add(time.Hour * 2).Unix(), //過期時間
 	})

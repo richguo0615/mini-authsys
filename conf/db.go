@@ -29,6 +29,7 @@ func InitDB() {
 	)
 
 	DB = sysDB
+	fmt.Println("db init ...")
 }
 
 func InitRedis() {
@@ -39,5 +40,5 @@ func InitRedis() {
 	})
 
 	pong, err := RedisClient.Ping().Result()
-	fmt.Println("init redis: ", pong, err)
+	fmt.Println("redis init: ", pong, err, "...")
 }
