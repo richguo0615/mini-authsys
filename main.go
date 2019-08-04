@@ -10,8 +10,8 @@ func main() {
 	conf.InitDB()
 	conf.InitRedis()
 	kafka.InitConfig()
-	kafka.InitProducer(kafka.ProducerTrans, []string{"172.16.132.16:9092"}, kafka.ProducerTypeSync)
-	kafka.InitConsumer(kafka.ConsumerTrans, []string{"172.16.132.16:9092"})
+	kafka.InitProducer(kafka.ProducerTrans, []string{"localhost:9092"}, kafka.ProducerTypeSync)
+	kafka.InitConsumer(kafka.ConsumerTrans, []string{"localhost:9092"})
 
 	go kafka.ConsumeTransIn()
 
